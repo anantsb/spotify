@@ -1,16 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 import { RxCaretLeft, RxCaretRight } from "react-icons/rx";
+import { useRouter } from "next/navigation";
+import { FaUserAlt } from "react-icons/fa";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { toast } from "react-hot-toast";
 import { HiHome } from "react-icons/hi";
 import { BiSearch } from "react-icons/bi";
-import Button from "./Button";
+
 import useAuthModal from "@/hooks/useAuthModal";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useUser } from "@/hooks/useUser";
-import { FaUserAlt } from "react-icons/fa";
-import toast from "react-hot-toast";
+import usePlayer from "@/hooks/usePlayer";
+
+import Button from "./Button";
 
 interface HeaderProps {
   children: React.ReactNode;
@@ -18,6 +21,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ children, className }) => {
+  const player = usePlayer();
   const router = useRouter();
   const authModal = useAuthModal();
 
@@ -26,23 +30,23 @@ const Header: React.FC<HeaderProps> = ({ children, className }) => {
 
   const handleLogout = async () => {
     const { error } = await supabaseClient.auth.signOut();
-
+    player.reset();
     router.refresh();
 
     if (error) {
       toast.error(error.message);
-    } else {
-      toast.success("Logged Out");
     }
   };
+
   return (
     <div
       className={twMerge(
-        `h-fit 
-            bg-gradient-to-b 
-  from-emerald-800 
-  p-6
-  `,
+        `
+        h-fit 
+        bg-gradient-to-b 
+        from-emerald-800 
+        p-6
+        `,
         className
       )}
     >
@@ -131,9 +135,11 @@ const Header: React.FC<HeaderProps> = ({ children, className }) => {
               <div>
                 <Button
                   onClick={authModal.onOpen}
-                  className='bg-transparent 
+                  className='
+                    bg-transparent 
                     text-neutral-300 
-                    font-medium'
+                    font-medium
+                  '
                 >
                   Sign up
                 </Button>
